@@ -8,7 +8,8 @@ const config = require('./config/config');
 
 const authRoute = require('./routes/authRoute');
 // const userRoute = require('./routes/userRoute');
-// const productRoute = require('./routes/productRoute');
+const productRoutes = require('./routes/productRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
 // const cartRoute = require('./routes/cartRoute');
 // const orderRoute = require('./routes/orderRoute');
 // const stripeRoute = require('./routes/stripeRoute');
@@ -23,7 +24,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 
 mongoose
-  .connect(config.mongoURI)
+  .connect(config.mongoURI, {
+    w: 1
+  })
   .then(() => console.log("DB Connection Successfull!"))
   .catch((err) => {
     console.log('MongoDb Error: ', err);
@@ -31,7 +34,8 @@ mongoose
 
 app.use('/api/v1/auth', authRoute);
 // app.use('/api/v1/users', userRoute);
-// app.use('/api/v1/products', productRoute);
+app.use('/api/v1/products', productRoutes);
+app.use('/api/v1/categories', categoryRoutes);
 // app.use('/api/v1/carts', cartRoute);
 // app.use('/apiv1//orders', orderRoute);
 // app.use('/api/v1/checkout', stripeRoute);
