@@ -9,9 +9,9 @@ exports.initializePayment = async (email, amount) => {
     try {
       const postData = JSON.stringify({
         email,
-        amount,         
+        amount,
+        // Other necessary parameters based on Paystack's API
       });
-  
 
     const options = {
       hostname: 'api.paystack.co',
@@ -34,12 +34,8 @@ exports.initializePayment = async (email, amount) => {
       });
 
       payRes.on('end', () => {
-        const paymentInfo = JSON.parse(data);
-        // Extract necessary payment details from paymentInfo and structure it accordingly
-        const formattedPaymentInfo = {
-          paymentId: paymentInfo.data.id, // Adjust to match the actual payment ID field from Paystack          
-        };
-        resolve(formattedPaymentInfo);
+        const paymentInfo = JSON.parse(data);               
+        resolve(paymentInfo);
       });
     });
 
@@ -52,7 +48,7 @@ exports.initializePayment = async (email, amount) => {
     payReq.end();
   });
   } catch (error) {
-    throw new Error('Failed to initialize payment: ' + error.message);
+    res.status(500).json({ message: 'Failed to initialize payment', error: error.message });
   }
 };
 
