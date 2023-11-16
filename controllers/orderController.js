@@ -5,7 +5,7 @@ const moment = require('moment');
 // Place an order
 exports.placeOrder = async (req, res) => {
   try {
-    const { products, totalPrice, address } = req.body;
+    const { products, totalPrice } = req.body;
 
     const user = await User.findById(req.user);
     if (!user) {
@@ -16,7 +16,6 @@ exports.placeOrder = async (req, res) => {
       user: req.user,
       products,
       totalPrice,
-      address,
       status: 'Pending',
     });
 

@@ -1,6 +1,6 @@
-const config = require('../config/config');
+//const config = require('../config/config');
 const Order = require('../models/Order');
-const paystack = require('paystack')(config.PAYSTACK_SECRET_KEY);
+//const paystack = require('paystack')(config.PAYSTACK_SECRET_KEY);
 
 const https = require('https');
 const querystring = require('querystring');
