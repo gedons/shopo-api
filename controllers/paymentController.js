@@ -35,8 +35,12 @@ exports.initializePayment = async (req, res) => {
       });
 
       payRes.on('end', () => {
-        const paymentInfo = JSON.parse(data);               
-        resolve(paymentInfo);
+        const paymentInfo = JSON.parse(data);
+        // Extract necessary payment details from paymentInfo and structure it accordingly
+        const formattedPaymentInfo = {
+          paymentId: paymentInfo.data.id, // Adjust to match the actual payment ID field from Paystack          
+        };
+        resolve(formattedPaymentInfo);
       });
     });
 
@@ -49,7 +53,7 @@ exports.initializePayment = async (req, res) => {
     payReq.end();
   });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to initialize payment', error: error.message });
+    throw new Error('Failed to initialize payment: ' + error.message);
   }
 };
 

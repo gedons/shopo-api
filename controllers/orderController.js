@@ -24,9 +24,20 @@ exports.placeOrderAndInitiatePayment  = async (req, res) => {
 
      // Initialize payment for the order
      const paymentInitialization = await paymentController.initializePayment(email, amount);
+
+     const paymentDetails = {
+        paymentId: paymentInitialization.paymentId,  
+        // Other relevant payment details
+      };
+  
+      // Update the order entity with payment details
+      savedOrder.payment = paymentDetails;
+
+      // Save the updated order to the database
+    await savedOrder.save();
      
  
-     res.status(201).json({ message: 'Order placed and payment initialized', order: savedOrder, payment: paymentInitialization });
+     res.status(201).json({ message: 'Order placed and payment initialized', order: savedOrder, payment: paymentDetails });
    } catch (error) {
      res.status(500).json({ message: 'Failed to place order and initialize payment', error: error.message });
    }
