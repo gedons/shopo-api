@@ -35,8 +35,7 @@ exports.initializePayment = async (req, res) => {
       });
 
       payRes.on('end', () => {
-        const paymentInfo = JSON.parse(data);       
-        res.status(200).json({paymentInfo});
+        const paymentInfo = JSON.parse(data);               
         resolve(paymentInfo);
       });
     });
