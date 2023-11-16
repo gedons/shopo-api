@@ -20,7 +20,7 @@ exports.initializePayment = async (req, res) => {
       path: '/transaction/initialize',
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${config.PAYSTACK_SECRET_KEY}`,
+        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
         'Content-Type': 'application/json',
         'Content-Length': postData.length,
       }
