@@ -2,28 +2,50 @@ const config = require('../config/config');
 const Order = require('../models/Order');
 const paystack = require('paystack')(config.PAYSTACK_SECRET_KEY);
 
+const https = require('https');
+const querystring = require('querystring');
+
 exports.initializePayment = async (req, res) => {
   try {
-    const { amount, email, reference } = req.body;
-
-    const paymentParams = {
-      amount: amount * 100,  
+    const { email, amount } = req.body;  
+    const postData = JSON.stringify({
       email,
-      reference,
-      metadata: {
-        custom_fields: [
-          {
-            display_name: 'Payment for',
-            variable_name: 'payment_for',
-            value: 'Product purchase' 
-          }
-        ]
+      amount,
+       
+    });
+
+    const options = {
+      hostname: 'api.paystack.co',
+      port: 443,
+      path: '/transaction/initialize',
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${config.PAYSTACK_SECRET_KEY}`,
+        'Content-Type': 'application/json',
+        'Content-Length': postData.length,
       }
     };
 
-    const payment = await paystack.initializeTransaction(paymentParams);
+    const payReq = https.request(options, payRes => {
+      let data = '';
 
-    res.status(200).json({ payment });
+      payRes.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      payRes.on('end', () => {
+        console.log(JSON.parse(data));
+        res.status(200).json({ payment: JSON.parse(data) });
+      });
+    });
+
+    payReq.on('error', error => {
+      console.error(error);
+      res.status(500).json({ message: 'Failed to initialize payment', error: error.message });
+    });
+
+    payReq.write(postData);
+    payReq.end();
   } catch (error) {
     res.status(500).json({ message: 'Failed to initialize payment', error: error.message });
   }
