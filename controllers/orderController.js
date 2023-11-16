@@ -109,7 +109,7 @@ exports.getMonthlyIncome = async (req, res) => {
       // Find orders within the current month
       const monthlyCompletedOrders  = await Order.find({
         createdAt: { $gte: startOfMonth, $lte: endOfMonth },
-        status: 'Confirmed'
+        status: 'Paid'
       });
   
       // Calculate total income
