@@ -1,11 +1,12 @@
 const Order = require('../models/Order');
 const User = require('../models/User');
 const moment = require('moment');
+const paymentController = require('../controllers/paymentController');
 
 // Place an order
-exports.placeOrder = async (req, res) => {
+exports.placeOrderAndInitiatePayment  = async (req, res) => {
   try {
-    const { products, totalPrice } = req.body;
+    const { email, amount, products } = req.body;
 
     const user = await User.findById(req.user);
     if (!user) {
@@ -15,17 +16,21 @@ exports.placeOrder = async (req, res) => {
     const newOrder = new Order({
       user: req.user,
       products,
-      totalPrice,
+      totalPrice: amount,  
       status: 'Pending',
     });
 
     const savedOrder = await newOrder.save();
 
-    res.status(201).json({ message: 'Order placed successfully', order: savedOrder });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to place order', error: error.message });
-  }
-};
+     // Initialize payment for the order
+     const paymentInitialization = await paymentController.initializePayment(email, amount);
+     
+ 
+     res.status(201).json({ message: 'Order placed and payment initialized', order: savedOrder, payment: paymentInitialization });
+   } catch (error) {
+     res.status(500).json({ message: 'Failed to place order and initialize payment', error: error.message });
+   }
+ };
 
 // Get all orders for a user
 exports.getUserOrders = async (req, res) => {
@@ -119,3 +124,7 @@ exports.getMonthlyIncome = async (req, res) => {
       res.status(500).json({ message: 'Failed to calculate monthly income', error: error.message });
     }
   };
+
+ 
+
+ 

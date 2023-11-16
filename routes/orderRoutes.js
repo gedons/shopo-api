@@ -6,7 +6,7 @@ const orderController = require('../controllers/orderController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 // Place an order
-router.post('/place-order', authMiddleware.verifyToken, orderController.placeOrder);
+router.post('/place-order', authMiddleware.verifyToken, orderController.placeOrderAndInitiatePayment );
 
 // Get all orders for a user
 router.get('/user-orders', authMiddleware.verifyToken, orderController.getUserOrders);

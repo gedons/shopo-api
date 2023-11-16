@@ -25,27 +25,30 @@ exports.initializePayment = async (req, res) => {
         'Content-Length': postData.length,
       }
     };
+    
+    return new Promise((resolve, reject) => {
+        const payReq = https.request(options, payRes => {
+          let data = '';
 
-    const payReq = https.request(options, payRes => {
-      let data = '';
-
-      payRes.on('data', (chunk) => {
+    payRes.on('data', (chunk) => {
         data += chunk;
       });
 
       payRes.on('end', () => {
-        console.log(JSON.parse(data));
-        res.status(200).json({ payment: JSON.parse(data) });
+        const paymentInfo = JSON.parse(data);       
+        res.status(200).json({paymentInfo});
+        resolve(paymentInfo);
       });
     });
 
     payReq.on('error', error => {
       console.error(error);
-      res.status(500).json({ message: 'Failed to initialize payment', error: error.message });
+      reject(error);
     });
 
     payReq.write(postData);
     payReq.end();
+  });
   } catch (error) {
     res.status(500).json({ message: 'Failed to initialize payment', error: error.message });
   }
@@ -53,38 +56,40 @@ exports.initializePayment = async (req, res) => {
 
 
 
-exports.handleWebhook = async (req, res) => {
-  try {
-    const { event, data } = req.body;
-
-    if (event === 'charge.success') {
-      const { reference, amount } = data;
-
-      // Save payment details to the Order model
-      const order = await Order.findOneAndUpdate(
-        { 'paymentDetails.reference': reference },
-        { $set: { 'paymentDetails.amount': amount, status: 'Paid', 'paymentDetails': data } },
-        { new: true }
-      );
-
-      if (!order) {
-        // Handle cases when the order is not found
-        // Create a new order with payment details
-        const newOrder = new Order({
-          user: req.user, // Assuming the user ID is available in the request
-          totalPrice: amount, // Adjust this according to your use case
-          status: 'Paid',
-          paymentDetails: data,
-          // Add other necessary fields
-        });
-        await newOrder.save();
+exports.handlePaymentWebhook  = async (req, res) => {
+    try {
+        const eventData = req.body; // Assuming Paystack sends data in the request body
+    
+        // Extract necessary details such as payment status, order ID, etc.
+        const paymentStatus = eventData.status; // Example: extracting payment status
+        const orderID = eventData.order_id; // Assuming Paystack sends the order ID
+    
+        // Retrieve order details from your database using the provided order ID or reference
+        const order = await Order.findById(orderID);
+    
+        if (!order) {
+          return res.status(404).json({ message: 'Order not found' });
+        }
+    
+        // Update order status based on payment status received
+        if (paymentStatus === 'success') {
+          // Set order status as "Paid" if payment was successful
+          order.status = 'Paid';
+          // Update any other relevant payment-related information in the order
+    
+          // Save the updated order status to the database
+          await order.save();
+        } else if (paymentStatus === 'failed') {
+          // Handle failed payments - update order status accordingly
+          order.status = 'Failed';
+          // Handle any other actions for failed payments
+    
+          // Save the updated order status to the database
+          await order.save();
+        }
+    
+        res.status(200).end(); // Respond to Paystack's webhook with a success status
+      } catch (error) {
+        res.status(500).json({ message: 'Failed to handle Paystack webhook', error: error.message });
       }
-
-      res.status(200).json({ message: 'Payment processed successfully' });
-    } else {
-      res.status(200).json({ message: 'Event not handled' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to process webhook event', error: error.message });
-  }
 };
