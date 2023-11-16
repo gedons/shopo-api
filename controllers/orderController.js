@@ -6,7 +6,7 @@ const paymentController = require('../controllers/paymentController');
 // Place an order
 exports.placeOrderAndInitiatePayment  = async (req, res) => {
   try {
-    const { email, amount, products } = req.body;
+    const {email, amount, products } = req.body;
 
     const user = await User.findById(req.user);
     if (!user) {
@@ -40,6 +40,7 @@ exports.placeOrderAndInitiatePayment  = async (req, res) => {
      res.status(201).json({ message: 'Order placed and payment initialized', order: savedOrder, payment: paymentDetails });
    } catch (error) {
      res.status(500).json({ message: 'Failed to place order and initialize payment', error: error.message });
+     console.log(error.message);
    }
  };
 

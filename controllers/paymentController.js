@@ -5,14 +5,13 @@ const Order = require('../models/Order');
 const https = require('https');
 const querystring = require('querystring');
 
-exports.initializePayment = async (req, res) => {
-  try {
-    const { email, amount } = req.body;  
-    const postData = JSON.stringify({
-      email,
-      amount,
-       
-    });
+exports.initializePayment = async (email, amount) => {
+    try {
+      const postData = JSON.stringify({
+        email,
+        amount,         
+      });
+  
 
     const options = {
       hostname: 'api.paystack.co',
