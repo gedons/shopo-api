@@ -55,33 +55,32 @@ exports.initializePayment = async (email, amount) => {
 
 
 
-exports.handlePaymentWebhook  = async (req, res) => {
-    try {
-        const eventData = req.body;  
-        const transactionReference = eventData.data.reference;
-    
-        const order = await Order.findOne({ transactionReference });
-    
-        if (!order) {
-          return res.status(404).json({ message: 'Order not found' });
-        }
-    
-        // Update order status based on payment status received
-        const paymentStatus = eventData.event;
-        if (paymentStatus === 'charge.success') {      
-          order.status = 'Paid';
-    
-          // Save the updated order status to the database
-          await order.save();
-        } else if (paymentStatus === 'charge.failed') {
-          // Handle failed payments - update order status accordingly
-          order.status = 'Failed';
-    
-          await order.save();
-        }
-    
-        res.status(200).end();  
-      } catch (error) {
-        res.status(500).json({ message: 'Failed to handle Paystack webhook', error: error.message });
-      }
+exports.handlePaymentWebhook = async (req, res) => {
+  try {
+    const eventData = req.body;  
+    const paymentReference = eventData.data.reference; 
+
+    // Find the order based on the payment reference field
+    const order = await Order.findOne({ paymentReference });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Update order status based on payment status received
+    const paymentStatus = eventData.event;
+
+    if (paymentStatus === 'charge.success') {
+      order.status = 'Paid';
+      await order.save();
+    } else if (paymentStatus === 'charge.failed') {
+      order.status = 'Failed';
+      await order.save();
+    }
+
+    res.status(200).end();  
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to handle Paystack webhook', error: error.message });
+  }
 };
+
