@@ -34,8 +34,9 @@ exports.initializePayment = async (email, amount) => {
       });
 
       payRes.on('end', () => {
-        const paymentInfo = JSON.parse(data);               
-        resolve(paymentInfo);
+        const paymentInfo = JSON.parse(data);          
+        const paymentReference = paymentInfo.data.reference;      
+        resolve({ paymentInfo, paymentReference });
       });
     });
 
