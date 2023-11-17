@@ -30,10 +30,8 @@ const orderSchema = new mongoose.Schema({
     default: 'Pending',
   },
 
-  payment: {
-    paymentId: {
-      type: String 
-    },
+  paymentReference: {
+    type: String, 
   },
   
 }, { timestamps: true });
