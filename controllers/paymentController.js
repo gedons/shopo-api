@@ -5,12 +5,12 @@ const Order = require('../models/Order');
 const https = require('https');
 const querystring = require('querystring');
 
-exports.initializePayment = async (email, amount) => {
+exports.initializePayment = async (email, amountInNaira) => {
     try {
+      const amountInKobo = amountInNaira * 100; 
       const postData = JSON.stringify({
         email,
-        amount,
-        // Other necessary parameters based on Paystack's API
+        amount: amountInKobo,         
       });
 
     const options = {

@@ -23,7 +23,8 @@ exports.placeOrderAndInitiatePayment  = async (req, res) => {
     const savedOrder = await newOrder.save();
 
      // Initialize payment for the order
-     const { paymentInfo, paymentReference } = await paymentController.initializePayment(email, amount);
+     const amountInNaira = amount;
+     const { paymentInfo, paymentReference } = await paymentController.initializePayment(email, amountInNaira);
 
      // Update the order with payment reference
      savedOrder.paymentReference = paymentReference;

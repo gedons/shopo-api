@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const config = require('./config/config');
 
 const authRoute = require('./routes/authRoute');
-// const userRoute = require('./routes/userRoute');
+const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const cartRoutes = require('./routes/cartRoutes');
@@ -33,7 +33,7 @@ mongoose
   });
 
 app.use('/api/v1/auth', authRoute);
-// app.use('/api/v1/users', userRoute);
+app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/cart', cartRoutes);
