@@ -56,37 +56,30 @@ exports.initializePayment = async (email, amount) => {
 
 exports.handlePaymentWebhook  = async (req, res) => {
     try {
-        const eventData = req.body; // Assuming Paystack sends data in the request body
+        const eventData = req.body;  
+        const transactionReference = eventData.data.reference;
     
-        // Extract necessary details such as payment status, order ID, etc.
-        const paymentStatus = eventData.status; // Example: extracting payment status
-        const orderID = eventData.order_id; // Assuming Paystack sends the order ID
-    
-        // Retrieve order details from your database using the provided order ID or reference
-        const order = await Order.findById(orderID);
+        const order = await Order.findOne({ transactionReference });
     
         if (!order) {
           return res.status(404).json({ message: 'Order not found' });
         }
     
         // Update order status based on payment status received
-        if (paymentStatus === 'success') {
-          // Set order status as "Paid" if payment was successful
+        const paymentStatus = eventData.event;
+        if (paymentStatus === 'charge.success') {      
           order.status = 'Paid';
-          // Update any other relevant payment-related information in the order
     
           // Save the updated order status to the database
           await order.save();
-        } else if (paymentStatus === 'failed') {
+        } else if (paymentStatus === 'charge.failed') {
           // Handle failed payments - update order status accordingly
           order.status = 'Failed';
-          // Handle any other actions for failed payments
     
-          // Save the updated order status to the database
           await order.save();
         }
     
-        res.status(200).end(); // Respond to Paystack's webhook with a success status
+        res.status(200).end();  
       } catch (error) {
         res.status(500).json({ message: 'Failed to handle Paystack webhook', error: error.message });
       }
