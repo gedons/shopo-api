@@ -75,4 +75,4 @@ exports.viewAllUsers = async (req, res) => {
     } catch (error) {
       res.status(500).json({ message: 'Failed to fetch users', error: error.message });
     }
-  };
+};
