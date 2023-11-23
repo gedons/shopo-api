@@ -1,4 +1,7 @@
 const Category = require('../models/Category');
+const fs = require('fs');
+//const url = 'http://localhost:5000';
+
 
 // Create a new category
 exports.createCategory = async (req, res) => {
@@ -21,6 +24,32 @@ exports.createCategory = async (req, res) => {
   }
 };
 
+// Handle image upload for a specific category by ID
+exports.uploadCategoryImage = async (req, res) => {
+  try {
+    const categoryId = req.params.categoryId;
+    const category = await Category.findById(categoryId);
+
+    if (!category) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    // Logic to handle image upload and store in a folder
+    if (req.file) {
+      // Save image URL to the database
+      category.imageUrl = `/uploads/categories/${req.file.filename}`;  
+      await category.save();
+
+      res.status(200).json({ message: 'Image uploaded successfully', imageUrl: category.imageUrl });
+    } else {
+      res.status(400).json({ message: 'No image uploaded' });
+    }
+  } catch (error) {
+    console.error('Error uploading category image:', error);
+    res.status(500).json({ message: 'Failed to upload image', error: error.message });
+  }
+};
+
 // Get all categories
 exports.getAllCategories = async (req, res) => {
     try {
@@ -29,7 +58,7 @@ exports.getAllCategories = async (req, res) => {
     } catch (error) {
       res.status(500).json({ message: 'Error getting categories', error: error.message });
     }
-  };
+};
 
 // Get a single category by ID
 exports.getCategoryById = async (req, res) => {
@@ -67,7 +96,7 @@ exports.updateCategoryById = async (req, res) => {
     } catch (error) {
       res.status(500).json({ message: 'Category update failed', error: error.message });
     }
-  };
+};
 
 // Delete a category by ID
 exports.deleteCategoryById = async (req, res) => {
@@ -81,9 +110,20 @@ exports.deleteCategoryById = async (req, res) => {
       if (!deletedCategory) {
         return res.status(404).json({ message: 'Category not found' });
       }
+
+      // Delete associated image from the uploads folder
+      if (deletedCategory.imageUrl) {
+        const imagePath = `.${deletedCategory.imageUrl}`; 
+        fs.unlink(imagePath, (err) => {
+          if (err) {
+            console.error('Error deleting category image:', err);
+            // Handle error if needed
+          }
+        });
+      }
   
       res.status(200).json({ message: 'Category deleted successfully' });
     } catch (error) {
       res.status(500).json({ message: 'Category deletion failed', error: error.message });
     }
-  };
+};
