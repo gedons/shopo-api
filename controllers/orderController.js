@@ -35,7 +35,7 @@ exports.placeOrderAndInitiatePayment  = async (req, res) => {
    } catch (error) {
      res.status(500).json({ message: 'Failed to place order and initialize payment', error: error.message });
    }
- };
+};
 
 // Get all orders for a user
 exports.getUserOrders = async (req, res) => {
@@ -55,12 +55,15 @@ exports.getAllOrders = async (req, res) => {
     }
 
     try {
-      const allOrders = await Order.find();
+      const allOrders = await Order.find().populate('user', 'firstname lastname email address postcode').populate({
+        path: 'products.product',
+        select: 'title quantity'
+    });
       res.status(200).json({ orders: allOrders });
     } catch (error) {
       res.status(500).json({ message: 'Failed to get all orders', error: error.message });
     }
-  };
+};
 
 // Update order status (for admin)
 exports.updateOrderStatus = async (req, res) => {
@@ -107,7 +110,7 @@ exports.deleteOrder = async (req, res) => {
     }
   };
 
-// Calculate monthly income
+// Calculate monthly income (for admin)
 exports.getMonthlyIncome = async (req, res) => {
     try {
       // Get the current month and year
@@ -128,7 +131,7 @@ exports.getMonthlyIncome = async (req, res) => {
     } catch (error) {
       res.status(500).json({ message: 'Failed to calculate monthly income', error: error.message });
     }
-  };
+};
 
  
 
