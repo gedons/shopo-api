@@ -147,6 +147,16 @@ exports.getMonthlyIncome = async (req, res) => {
     }
 };
 
+// Get total number of orders
+exports.getTotalOrders = async (req, res) => {
+  try {
+    const totalOrders = await Order.countDocuments();
+    res.status(200).json({ totalOrders });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch total orders', error: error.message });
+  }
+};
+
  
 
  

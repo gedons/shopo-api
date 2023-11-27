@@ -25,8 +25,8 @@ router.post('/:productId/image', upload.single('image'), productController.uploa
 // Delete a product by ID
 router.delete('/delete/:productId', authMiddleware.verifyToken, productController.deleteProductById);
 
-
-
+// Get total number of products
+router.get('/getTotalProducts',  authMiddleware.verifyToken, ProductController.getTotalProducts);
 
 
 module.exports = router;

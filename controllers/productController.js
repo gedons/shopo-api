@@ -166,3 +166,13 @@ exports.deleteProductById = async (req, res) => {
       res.status(500).json({ message: 'Product deletion failed', error: error.message });
     }
 };
+
+// Get total number of products
+exports.getTotalProducts = async (req, res) => {
+  try {
+    const totalProducts = await Product.countDocuments();
+    res.status(200).json({ totalProducts });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch total products', error: error.message });
+  }
+};
