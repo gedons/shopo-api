@@ -83,3 +83,65 @@ exports.viewAllUsers = async (req, res) => {
       res.status(500).json({ message: 'Failed to fetch users', error: error.message });
     }
 };
+
+
+//update admin details
+exports.updateAdminDetails = async (req, res) => {
+  try {
+
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Permission denied. Only admin users can view all users.' });
+    }
+
+    const { firstname, email  } = req.body; 
+
+    // Fetch admin user by ID or specific criteria
+    const adminUser = await User.findById(req.user);  
+
+    if (!adminUser) {
+      return res.status(404).json({ message: 'Admin user not found' });
+    }
+
+    adminUser.firstname = firstname;  
+    adminUser.email = email;  
+    await adminUser.save(); 
+
+    res.status(200).json({ message: 'Admin details updated successfully', user: adminUser });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update admin details', error: error.message });
+  }
+};
+
+
+
+// Update admin password
+exports.updateAdminPassword = async (req, res) => {
+  try {
+
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Permission denied. Only admin users can view all users.' });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    const adminUser = await User.findById(req.user);
+
+    if (!adminUser) {
+      return res.status(404).json({ message: 'Admin user not found' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(currentPassword, adminUser.password);
+
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: 'Invalid current password' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    adminUser.password = hashedPassword;
+    await adminUser.save();
+
+    res.status(200).json({ message: 'Admin password changed successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update admin password', error: error.message });
+  }
+};
