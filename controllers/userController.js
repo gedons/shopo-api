@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Category = require('../models/Order');
 const bcrypt = require('bcrypt');
 
 // Fetch user profile
@@ -26,7 +27,7 @@ exports.updateUserProfile = async (req, res) => {
   }
 };
 
-// Change password
+// Change user password
 exports.changePassword = async (req, res) => {
     try {
       const { currentPassword, newPassword } = req.body;
@@ -52,10 +53,16 @@ exports.changePassword = async (req, res) => {
     }
 };
   
-// Delete user account
+// Delete user account (Admin)
 exports.deleteUserAccount = async (req, res) => {
 try {
-    await User.findByIdAndDelete(req.user);
+    const deletedUser = await User.findByIdAndDelete(req.params.userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+
     res.status(200).json({ message: 'User account deleted successfully' });
 } catch (error) {
     res.status(500).json({ message: 'Failed to delete user account', error: error.message });

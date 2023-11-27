@@ -153,7 +153,7 @@ exports.deleteProductById = async (req, res) => {
       // Loop through each image path in the deleted product's images array
       deletedProduct.images.forEach((imagePath) => {
         // Construct the full path to the image file
-        const fullImagePath = path.join(__dirname, '..', imagePath); // Adjust '..' based on your file structure
+        const fullImagePath = path.join(__dirname, '..', imagePath);  
 
         // Check if the file exists and unlink (delete) it from the server
         if (fs.existsSync(fullImagePath)) {

@@ -13,10 +13,10 @@ router.put('/profile', authMiddleware.verifyToken, userController.updateUserProf
 router.put('/change-password', authMiddleware.verifyToken, userController.changePassword);
 
 // Delete user account
-router.delete('/profile', authMiddleware.verifyToken, userController.deleteUserAccount);
+router.delete('/profile/:userId', authMiddleware.verifyToken, userController.deleteUserAccount);
 
 // View all users (only accessible to admin)
-router.get('/profiles', authMiddleware.verifyToken, userController.viewAllUsers);  
+router.get('/profiles/', authMiddleware.verifyToken, userController.viewAllUsers);  
 
 
 module.exports = router;

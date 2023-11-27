@@ -37,7 +37,7 @@ exports.placeOrderAndInitiatePayment  = async (req, res) => {
    }
 };
 
-// Get all orders for a user
+// Get all orders for a user (logged in user)
 exports.getUserOrders = async (req, res) => {
     try {
       const userOrders = await Order.find({ user: req.user });
@@ -45,7 +45,7 @@ exports.getUserOrders = async (req, res) => {
     } catch (error) {
       res.status(500).json({ message: 'Failed to get user orders', error: error.message });
     }
-  };
+};
 
 // Get all orders (for admin)
 exports.getAllOrders = async (req, res) => {
@@ -63,6 +63,20 @@ exports.getAllOrders = async (req, res) => {
     } catch (error) {
       res.status(500).json({ message: 'Failed to get all orders', error: error.message });
     }
+};
+
+// Get all orders for a user (based on id) //for admin
+exports.getUserOrder = async (req, res) => {
+  try {
+    const { userId } = req.params; 
+    const userOrders = await Order.find({ user: userId }).populate({
+      path: 'products.product',
+      select: 'title quantity'
+  }); 
+    res.status(200).json({ orders: userOrders });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get user orders', error: error.message });
+  }
 };
 
 // Update order status (for admin)

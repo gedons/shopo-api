@@ -14,6 +14,9 @@ router.get('/user-orders', authMiddleware.verifyToken, orderController.getUserOr
 // Get all orders (for admin)
 router.get('/all-orders', authMiddleware.verifyToken, orderController.getAllOrders);
 
+// Get all orders for a user (based on id) //for admin
+router.get('/users/:userId', authMiddleware.verifyToken, orderController.getUserOrder);
+
 // Update order status (for admin)
 router.put('/update-status', authMiddleware.verifyToken, orderController.updateOrderStatus);
 
