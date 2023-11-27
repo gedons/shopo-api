@@ -25,6 +25,6 @@ router.put('/admin/update-details', authMiddleware.verifyToken, userController.u
 router.put('/admin/update-password', authMiddleware.verifyToken, userController.updateAdminPassword);  
 
 // Get total number of users count
-router.get('/getTotalUsers',  authMiddleware.verifyToken,  UserController.getTotalUsers);
+router.get('/getTotalUsers',  authMiddleware.verifyToken,  userController.getTotalUsers);
 
 module.exports = router;
