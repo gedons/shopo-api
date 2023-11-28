@@ -119,7 +119,7 @@ exports.updateAdminPassword = async (req, res) => {
   try {
 
     if (!req.user.isAdmin) {
-      return res.status(403).json({ message: 'Permission denied. Only admin users can view all users.' });
+      return res.status(403).json({ message: 'Permission denied! Only admin users can view all users.' });
     }
 
     const { currentPassword, newPassword } = req.body;
