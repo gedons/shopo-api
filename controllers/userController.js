@@ -145,3 +145,14 @@ exports.updateAdminPassword = async (req, res) => {
     res.status(500).json({ message: 'Failed to update admin password', error: error.message });
   }
 };
+
+
+// Get total number of users count
+exports.getTotalUsers = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    res.status(200).json({ totalUsers });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch total users', error: error.message });
+  }
+};

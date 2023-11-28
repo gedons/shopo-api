@@ -26,4 +26,7 @@ router.delete('/delete-order/:orderId', authMiddleware.verifyToken, orderControl
 // Calculate monthly income
 router.get('/monthly-income', authMiddleware.verifyToken, orderController.getMonthlyIncome);
 
+// Get total number of orders
+router.get('/getTotalOrders',  authMiddleware.verifyToken, orderController.getTotalOrders);
+
 module.exports = router;
