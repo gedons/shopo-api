@@ -24,7 +24,7 @@ const config = require('../config/config');
         firstname,
         lastname,
         email,
-        password: hashedPassword, 
+        password: hashedPassword,  
         state,
         country,
         phone,

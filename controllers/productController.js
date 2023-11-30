@@ -10,7 +10,7 @@ exports.createProduct = async (req, res) => {
       return res.status(403).json({ message: 'Permission denied. Only admin users can create products.' });
     }
 
-    const { title, description, size, color, price, categoryId   } = req.body;
+    const { title, description, size, color, availability, price, categoryId   } = req.body;
     const images = req.files;
 
      // Check if the specified category exists
@@ -30,6 +30,7 @@ exports.createProduct = async (req, res) => {
       images: imageUrls,      
       size,
       color,
+      availability,
       price,
       category: categoryId, 
     });
@@ -42,7 +43,7 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-// Get all products
+// Get all random products
 exports.getAllProducts = async (req, res) => {
     try {
       const products = await Product.find().populate('category');
@@ -51,6 +52,28 @@ exports.getAllProducts = async (req, res) => {
       res.status(500).json({ message: 'Error getting products', error: error.message });
     }
 };
+
+// Get all products
+exports.getRandomProducts = async (req, res) => {
+  try {
+    const allProducts = await Product.find().populate('category');
+
+     // Get a random selection of products (let's say 5 random products for this example)
+     const numberOfRandomProducts = 8;
+     const randomProducts = getRandomProducts(allProducts, numberOfRandomProducts);
+ 
+
+    res.status(200).json({ randomProducts });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch random products: ', error: error.message });
+  }
+};
+
+// Function to get random products from an array of products
+function getRandomProducts(productsArray, count) {
+  const shuffledProducts = productsArray.sort(() => 0.5 - Math.random());
+  return shuffledProducts.slice(0, count);
+}
 
 
 // Get a single product by ID
@@ -76,6 +99,28 @@ exports.getProductsByCategory = async (req, res) => {
     }
 };
 
+// get related products by category
+exports.getRelatedProductsByCategory = async (req, res) => {
+  try {
+    const productId = req.params.productId;
+
+    
+    const product = await Product.findById(productId);
+    const categoryId = product.category; 
+
+    // Find other products with the same category (excluding the current product)
+    const relatedProducts = await Product.find({
+      category: categoryId,
+      _id: { $ne: productId },
+    }).limit(5);  
+    
+    res.status(200).json({ relatedProducts });
+  } catch (error) {
+    res.status(500).json({ message: 'Error getting related products', error: error.message });
+  }
+};
+
+
 // Update a product by ID
 exports.updateProductById = async (req, res) => {
   try {
@@ -83,7 +128,7 @@ exports.updateProductById = async (req, res) => {
       return res.status(403).json({ message: 'Permission denied. Only admin users can update products.' });
     }
 
-    const {  title, description,  size, color, price, categoryId } = req.body;
+    const {  title, description,  size, color, availability, price, categoryId } = req.body;
 
     // Check if the specified category exists
     const category = await Category.findById(categoryId);
@@ -93,7 +138,7 @@ exports.updateProductById = async (req, res) => {
 
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.productId,
-      {  title, description, size, color, price, category: categoryId },
+      {  title, description, size, color, availability, price, category: categoryId },
       { new: true }
     ).populate('category');
 

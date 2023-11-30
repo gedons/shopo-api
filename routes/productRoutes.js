@@ -10,11 +10,17 @@ router.post('/create', authMiddleware.verifyToken, upload.array('images'), produ
 // Get all products
 router.get('/all', productController.getAllProducts);
 
+// Get all random products
+router.get('/random', productController.getRandomProducts);
+
 // Get a single product by ID
 router.get('/:productId', productController.getProductById);
 
 // Get products by category
 router.get('/product-category/:categoryId', productController.getProductsByCategory);
+
+// get related products by category
+router.get('/:productId/related', productController.getRelatedProductsByCategory);
 
 // Update a product by ID
 router.put('/update/:productId', authMiddleware.verifyToken, productController.updateProductById);
