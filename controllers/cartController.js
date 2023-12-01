@@ -2,10 +2,11 @@ const Cart = require('../models/Cart');
 const User = require('../models/User');
 const Product = require('../models/Product');
 
+ 
 // Add a product to the cart
 exports.addToCart = async (req, res) => {
   try {
-    const { productId, quantity } = req.body;
+    const { productId, quantity, price } = req.body;
 
     const user = await User.findById(req.user);
     if (!user) {
@@ -20,17 +21,18 @@ exports.addToCart = async (req, res) => {
     let cart = await Cart.findOne({ user: req.user });
 
     if (!cart) {
-      cart = new Cart({ user: req.user, products: [{ product: productId, quantity }] });
+      cart = new Cart({ user: req.user, products: [{ product: productId, quantity, price }] });
     } else {
       // Check if the product is already in the cart
-      const existingProductIndex = cart.products.findIndex((item) => item.product.equals(productId));
+      const existingProduct = cart.products.find((item) => item.product.equals(productId));
 
-      if (existingProductIndex !== -1) {
-        // If the product exists, update its quantity
-        cart.products[existingProductIndex].quantity += quantity;
+      if (existingProduct) {
+        // If the product exists, update its quantity and calculate the updated price
+        existingProduct.quantity += quantity;
+        existingProduct.price += quantity * price;
       } else {
         // If the product doesn't exist, add it to the cart
-        cart.products.push({ product: productId, quantity });
+        cart.products.push({ product: productId, quantity, price });
       }
     }
 
@@ -41,6 +43,7 @@ exports.addToCart = async (req, res) => {
     res.status(500).json({ message: 'Failed to add product to cart', error: error.message });
   }
 };
+
 
 // Get the user's cart
 exports.getCart = async (req, res) => {
@@ -98,4 +101,15 @@ exports.removeFromCart = async (req, res) => {
     } catch (error) {
       res.status(500).json({ message: 'Failed to remove product from cart', error: error.message });
     }
+};
+
+//  clear all user's cart
+exports.clearUserCart = async (req, res) => {
+  try {
+    await Cart.deleteOne({ user: req.user });
+
+    res.status(200).json({ message: 'User cart cleared successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to clear user cart', error: error.message });
+  }
 };

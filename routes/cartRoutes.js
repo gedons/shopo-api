@@ -17,4 +17,7 @@ router.put('/update-quantity/:productId', authMiddleware.verifyToken, cartContro
 // Remove a product from the cart
 router.delete('/remove-from-cart/:productId', authMiddleware.verifyToken, cartController.removeFromCart);
 
+// delete all the cart
+router.delete('/clear-all', authMiddleware.verifyToken, cartController.clearUserCart);
+
 module.exports = router;
