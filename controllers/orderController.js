@@ -47,6 +47,18 @@ exports.getUserOrders = async (req, res) => {
     }
 };
 
+// Get order count for logged-in user
+exports.getUserOrderCount = async (req, res) => {
+  try {
+    const userId = req.user;  
+    const orderCount = await Order.countDocuments({ user: userId });
+    
+    res.status(200).json({ orderCount });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch order count', error: error.message });
+  }
+};
+
 // Get all orders (for admin)
 exports.getAllOrders = async (req, res) => {
 

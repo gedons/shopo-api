@@ -11,6 +11,9 @@ router.post('/place-order', authMiddleware.verifyToken, orderController.placeOrd
 // Get all orders for a user
 router.get('/user-orders', authMiddleware.verifyToken, orderController.getUserOrders);
 
+// Fetch order count for logged-in user (user)
+router.get('/order-count', authMiddleware.verifyToken, orderController.getUserOrderCount);
+
 // Get all orders (for admin)
 router.get('/all-orders', authMiddleware.verifyToken, orderController.getAllOrders);
 
