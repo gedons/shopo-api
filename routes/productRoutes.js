@@ -34,5 +34,8 @@ router.delete('/delete/:productId', authMiddleware.verifyToken, productControlle
 // Get total number of products
 router.get('/getTotalProducts',  authMiddleware.verifyToken, productController.getTotalProducts);
 
+// Route for searching products
+router.get('/search', productController.searchProducts);
+
 
 module.exports = router;

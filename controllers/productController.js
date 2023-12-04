@@ -75,7 +75,6 @@ function getRandomProducts(productsArray, count) {
   return shuffledProducts.slice(0, count);
 }
 
-
 // Get a single product by ID
 exports.getProductById = async (req, res) => {
     try {
@@ -219,5 +218,25 @@ exports.getTotalProducts = async (req, res) => {
     res.status(200).json({ totalProducts });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch total products', error: error.message });
+  }
+};
+
+
+// Backend API endpoint for searching products
+exports.searchProducts = async (req, res) => {
+  try {
+    const searchQuery = req.query.q;  
+
+    
+    const products = await Product.find({
+      $or: [
+        { title: { $regex: searchQuery, $options: 'i' } },
+        { description: { $regex: searchQuery, $options: 'i' } }, 
+      ],
+    });
+
+    res.status(200).json({ products });
+  } catch (error) {
+    res.status(500).json({ message: 'Error searching products', error: error.message });
   }
 };
