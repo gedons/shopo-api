@@ -222,27 +222,14 @@ exports.getTotalProducts = async (req, res) => {
   }
 };
 
-
-// Backend API endpoint for searching products
 exports.searchProducts = async (req, res) => {
   try {
-    const searchQuery = req.query.searchQuery;
+    const searchQuery = req.query.q;
+    // Perform a case-insensitive search for products containing the query in their name
+     const products = await Product.find({ title: searchQuery }).populate('category');
 
-    if (mongoose.isValidObjectId(searchQuery)) {
-      const product = await Product.findById(searchQuery);
-      return res.status(200).json({ product });
-    }
-     else {
-      const products = await Product.find({
-        $or: [
-          { title: { $regex: new RegExp(searchQuery, 'i') } }, 
-          { description: { $regex: new RegExp(searchQuery, 'i') } },
-        ],
-      });
-      return res.status(200).json({ products });
-    }
+    res.status(200).json({ products });
   } catch (error) {
-    return res.status(500).json({ message: 'Error getting product', error: error.message });
+    res.status(500).json({ message: 'Error searching products', error: error.message });
   }
-};
-
+}
