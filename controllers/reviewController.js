@@ -30,7 +30,8 @@ exports.addReview = async (req, res) => {
 exports.getAllReviews = async (req, res) => {
   try {
     const { productId } = req.params;
-    const reviews = await Review.find({ product: productId });
+    const reviews = await Review.find({ product: productId })
+    .populate('user', 'firstname', 'lastname');
     res.status(200).json({ reviews });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch reviews', error: error.message });
