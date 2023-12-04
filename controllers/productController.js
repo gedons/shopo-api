@@ -225,7 +225,7 @@ exports.getTotalProducts = async (req, res) => {
 // Backend API endpoint for searching products
 exports.searchProducts = async (req, res) => {
   try {
-    const searchQuery = req.query.q;  
+    const searchQuery = req.query.searchQuery;  
 
     
     const products = await Product.find({
