@@ -1,5 +1,6 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
+const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 
@@ -225,18 +226,23 @@ exports.getTotalProducts = async (req, res) => {
 // Backend API endpoint for searching products
 exports.searchProducts = async (req, res) => {
   try {
-    const searchQuery = req.query.searchQuery;  
+    const searchQuery = req.query.searchQuery;
 
-    
-    const products = await Product.find({
-      $or: [
-        { title: { $regex: searchQuery, $options: 'i' } },
-        { description: { $regex: searchQuery, $options: 'i' } }, 
-      ],
-    });
-
-    res.status(200).json({ products });
+    if (mongoose.isValidObjectId(searchQuery)) {
+      const product = await Product.findById(searchQuery);
+      return res.status(200).json({ product });
+    }
+     else {
+      const products = await Product.find({
+        $or: [
+          { title: { $regex: new RegExp(searchQuery, 'i') } }, 
+          { description: { $regex: new RegExp(searchQuery, 'i') } },
+        ],
+      });
+      return res.status(200).json({ products });
+    }
   } catch (error) {
-    res.status(500).json({ message: 'Error searching products', error: error.message });
+    return res.status(500).json({ message: 'Error getting product', error: error.message });
   }
 };
+
