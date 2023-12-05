@@ -55,16 +55,25 @@ exports.updateReview = async (req, res) => {
 };
 
 // Delete a review
+
 exports.deleteReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
+    const review = await Review.findById(reviewId);
 
-    const review = await Review.findByIdAndDelete(reviewId);
     if (!review) {
       return res.status(404).json({ message: 'Review not found' });
     }
+
+    // Check if the user is authorized to delete the review
+    if (review.user.toString() !== req.user) {
+      return res.status(403).json({ message: 'Unauthorized: You cannot delete this review' });
+    }
+
+    await Review.findByIdAndDelete(reviewId);
     res.status(200).json({ message: 'Review deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to delete review', error: error.message });
   }
 };
+
