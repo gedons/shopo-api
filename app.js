@@ -15,6 +15,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const bannerRoutes = require('./routes/bannerRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/banner', bannerRoutes);
+app.use('/api/v1/contact', contactRoutes);
 
 
 const port = process.env.PORT || 5000;
