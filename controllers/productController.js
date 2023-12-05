@@ -224,9 +224,9 @@ exports.getTotalProducts = async (req, res) => {
 
 exports.searchProducts = async (req, res) => {
   try {
-    const searchQuery = req.query.q;
+    const searchQuery = req.query.q || "";
     // Perform a case-insensitive search for products containing the query in their name
-     const products = await Product.find({ title: searchQuery }).populate('category');
+     const products = await Product.find({ title: {$regex:searchQuery, $options: "i"} }).populate('category');
 
     res.status(200).json({ products });
   } catch (error) {
