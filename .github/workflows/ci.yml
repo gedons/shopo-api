@@ -1,27 +1,26 @@
 on:
-    pull_request:
-    push:
-      branches: [main]
-  
-  jobs:
-    ci:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v3
-  
-        - name: Test
-          run: |
-            curl -O https://render.com/download/renderctl_linux
-            chmod +x renderctl_linux
-            sudo mv renderctl_linux /usr/local/bin/renderctl
-  
-        - name: Deploy
-          if: github.ref == 'refs/heads/main'
-          env:
-            deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-          run: |
-            curl "$deploy_url"
-  
-        - name: Show Deployment Status
-          run: renderctl list deploys
-  
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Test
+        run: |
+          curl -O https://render.com/download/renderctl_linux
+          chmod +x renderctl_linux
+          sudo mv renderctl_linux /usr/local/bin/renderctl
+
+      - name: Deploy
+        if: github.ref == 'refs/heads/main'
+        env:
+          deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          curl "$deploy_url"
+
+      - name: Show Deployment Status
+        run: renderctl list deploys
