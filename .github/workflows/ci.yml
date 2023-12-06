@@ -1,0 +1,29 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches:
+      - main   
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Renderctl
+      run: |
+        curl -O https://render.com/download/renderctl_linux
+        chmod +x renderctl_linux
+        sudo mv renderctl_linux /usr/local/bin/renderctl
+
+    - name: Deploy to Render
+      if: github.ref == 'refs/heads/main'
+      run: renderctl deploy --hook $deploy_url
+      env:
+        deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+
+    - name: Show Deployment Status
+      run: renderctl list deploys
