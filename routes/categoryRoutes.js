@@ -4,13 +4,13 @@ const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/categoryController');
 const authMiddleware = require('../middleware/authMiddleware');
-const upload = require('../middleware/upload');
+const multerConfig  = require('../middleware/multerConfig');
 
 // Create a new category
 router.post('/create', authMiddleware.verifyToken, categoryController.createCategory);
 
 // Handle image upload for a specific category by ID
-router.post('/:categoryId/image', upload.single('image'), categoryController.uploadCategoryImage);
+router.post('/:categoryId/image', multerConfig.single('image'), categoryController.uploadCategoryImage);
 
 // Get all categories
 router.get('/all', categoryController.getAllCategories);

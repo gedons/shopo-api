@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 const authMiddleware = require('../middleware/authMiddleware');
-const upload = require('../middleware/uploadProduct');
+const multerConfig  = require('../middleware/multerConfig');
+
 
 // Create a new product route
-router.post('/create', authMiddleware.verifyToken, upload.array('images'), productController.createProduct);
+router.post('/create', authMiddleware.verifyToken, multerConfig.array('images'), productController.createProduct);
 
 // Get all products
 router.get('/all', productController.getAllProducts);
@@ -26,7 +27,7 @@ router.get('/:productId/related', productController.getRelatedProductsByCategory
 router.put('/update/:productId', authMiddleware.verifyToken, productController.updateProductById);
 
 // Handle image upload for a specific product by ID
-router.post('/:productId/image', upload.single('image'), productController.uploadProductImage);
+router.post('/:productId/image', multerConfig.single('image'), productController.uploadProductImage);
 
 // Delete a product by ID
 router.delete('/delete/:productId', authMiddleware.verifyToken, productController.deleteProductById);

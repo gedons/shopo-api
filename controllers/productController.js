@@ -4,6 +4,17 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 
+const config = require('../config/config');
+
+const keyFilename = config.googleAppCredentials;
+
+const { Storage } = require('@google-cloud/storage');
+const storage = new Storage({
+  projectId: 'project-molding',
+  keyFilename: keyFilename,
+});
+const bucket = storage.bucket('project-molding_bucket');
+
 // Create a new product
 exports.createProduct = async (req, res) => {
   try {
@@ -20,11 +31,22 @@ exports.createProduct = async (req, res) => {
        return res.status(404).json({ message: 'Category not found' });
      }
 
-      // Store image URLs in an array
-    const imageUrls = images.map((image) => {
-      return `/uploads/products/${image.filename}`;
+      // Function to upload images to Google Cloud Storage
+      const uploadPromises = images.map((image) => {
+      const imageFileName = `${Date.now()}-${image.originalname}`;
+      const file = bucket.file(`${imageFileName}`);
+      return file.save(image.buffer, { contentType: image.mimetype });
     });
 
+      // Await uploading of all images
+      await Promise.all(uploadPromises);
+  
+      // Retrieve image URLs after upload
+      const imageUrls = images.map((image) => {
+        const imageFileName = `${Date.now()}-${image.originalname}`;
+        return `https://storage.googleapis.com/project-molding_bucket/${imageFileName}`;
+      });
+  
     const newProduct = new Product({
       title,
       description,
@@ -166,14 +188,33 @@ exports.uploadProductImage = async (req, res) => {
       return res.status(400).json({ message: 'No image file uploaded' });
     }
 
-    // Assuming the image is stored in req.file after Multer processing
-    const imagePath = `/uploads/products/${req.file.filename}`;
+    const fileName = `${Date.now()}-${path.basename(req.file.originalname)}`;
+    const file = bucket.file(fileName);
 
-    // Add the new image path to the product's images array
-    product.images.push(imagePath);
-    const updatedProduct = await product.save();
+    // Create a write stream to upload the file
+    const stream = file.createWriteStream({
+      metadata: {
+        contentType: req.file.mimetype,
+      },
+      resumable: false,
+    });
 
-    res.status(200).json({ message: 'Image Added successfully', image: updatedProduct });
+    stream.on('error', (err) => {
+      console.error('Error uploading to GCS:', err);
+      res.status(500).json({ message: 'Failed to upload image', error: err.message });
+    });
+
+    stream.on('finish', async () => {
+      // Once the file is successfully uploaded, add its GCS path to the product's images array
+      const gcsImagePath = `https://storage.googleapis.com/project-molding_bucket/${fileName}`;
+      product.images.push(gcsImagePath);
+
+      const updatedProduct = await product.save();
+
+      res.status(200).json({ message: 'Image added successfully', image: updatedProduct });
+    });
+
+    stream.end(req.file.buffer);  
   } catch (error) {
     console.error('Error uploading product image:', error);
     res.status(500).json({ message: 'Failed to upload image', error: error.message });
@@ -183,33 +224,33 @@ exports.uploadProductImage = async (req, res) => {
 
 // Delete a product by ID
 exports.deleteProductById = async (req, res) => {
-    try {
-      if (!req.user.isAdmin) {
-        return res.status(403).json({ message: 'Permission denied. Only admin users can delete products.' });
-      }
-  
-      const deletedProduct = await Product.findByIdAndDelete(req.params.productId).populate('category');
-  
-      if (!deletedProduct) {
-        return res.status(404).json({ message: 'Product not found' });
-      }
-
-
-      // Loop through each image path in the deleted product's images array
-      deletedProduct.images.forEach((imagePath) => {
-        // Construct the full path to the image file
-        const fullImagePath = path.join(__dirname, '..', imagePath);  
-
-        // Check if the file exists and unlink (delete) it from the server
-        if (fs.existsSync(fullImagePath)) {
-          fs.unlinkSync(fullImagePath);
-        }
-      });
-
-      res.status(200).json({ message: 'Product deleted successfully' });
-    } catch (error) {
-      res.status(500).json({ message: 'Product deletion failed', error: error.message });
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Permission denied. Only admin users can delete products.' });
     }
+
+    const deletedProduct = await Product.findByIdAndDelete(req.params.productId).populate('category');
+
+    if (!deletedProduct) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Loop through each image path in the deleted product's images array
+    deletedProduct.images.forEach(async (imagePath) => {
+      // Extract the image filename from the GCS path
+      const filename = imagePath.split('/').pop();
+      
+      // Get the file from Google Cloud Storage
+      const file = bucket.file(filename);
+
+      // Delete the file from the bucket
+      await file.delete();
+    });
+
+    res.status(200).json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Product deletion failed', error: error.message });
+  }
 };
 
 // Get total number of products
