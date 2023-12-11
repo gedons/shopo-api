@@ -10,10 +10,10 @@ const keyFilename = config.googleAppCredentials;
 
 const { Storage } = require('@google-cloud/storage');
 const storage = new Storage({
-  projectId: 'project-rollings',
+  projectId: 'project-molding',
   keyFilename: keyFilename,
 });
-const bucket = storage.bucket('portfolio-nerdy');
+const bucket = storage.bucket('project-molding_bucket');
 
 // Create a new product
 exports.createProduct = async (req, res) => {
@@ -44,7 +44,7 @@ exports.createProduct = async (req, res) => {
       // Retrieve image URLs after upload
       const imageUrls = images.map((image) => {
         const imageFileName = `${Date.now()}-${image.originalname}`;
-        return `https://storage.googleapis.com/portfolio-nerdy/${imageFileName}`;
+        return `https://storage.googleapis.com/project-molding_bucket/${imageFileName}`;
       });
   
     const newProduct = new Product({
@@ -206,7 +206,7 @@ exports.uploadProductImage = async (req, res) => {
 
     stream.on('finish', async () => {
       // Once the file is successfully uploaded, add its GCS path to the product's images array
-      const gcsImagePath = `https://storage.googleapis.com/portfolio-nerdy/${fileName}`;
+      const gcsImagePath = `https://storage.googleapis.com/project-molding_bucket/${fileName}`;
       product.images.push(gcsImagePath);
 
       const updatedProduct = await product.save();
