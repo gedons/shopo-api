@@ -43,7 +43,7 @@ exports.createProduct = async (req, res) => {
   
       // Retrieve image URLs after upload
       const imageUrls = images.map((image) => {
-        const imageFileName = `${Date.now()}-${image.originalname}`;
+        const imageFileName = `${image.originalname}`;
         return `https://storage.googleapis.com/project-molding_bucket/${imageFileName}`;
       });
   
@@ -188,7 +188,7 @@ exports.uploadProductImage = async (req, res) => {
       return res.status(400).json({ message: 'No image file uploaded' });
     }
 
-    const fileName = `${Date.now()}-${path.basename(req.file.originalname)}`;
+    const fileName = `${path.basename(req.file.originalname)}`;
     const file = bucket.file(fileName);
 
     // Create a write stream to upload the file
