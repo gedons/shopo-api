@@ -19,8 +19,13 @@ const contactRoutes = require('./routes/contactRoutes');
 
 dotenv.config();
 
+const corsOptions = {
+  origin: 'https://www.daeds.uk', 
+  credentials: true,
+};
 
-app.use(cors());
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use(bodyParser.urlencoded({ extended: true }));
