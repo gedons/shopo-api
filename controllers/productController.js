@@ -20,7 +20,7 @@ exports.createProduct = async (req, res) => {
       return res.status(403).json({ message: 'Permission denied. Only admin users can create products.' });
     }
 
-    const { title, description, size, color, availability, price, categoryId   } = req.body;
+    const { title, description, sizes, colors, availability, price, categoryId   } = req.body;
     const images = req.files;
 
      // Check if the specified category exists
@@ -49,8 +49,8 @@ exports.createProduct = async (req, res) => {
       title,
       description,
       images: imageUrls,      
-      size,
-      color,
+      sizes,
+      colors,
       availability,
       price,
       category: categoryId, 
@@ -147,7 +147,7 @@ exports.updateProductById = async (req, res) => {
       return res.status(403).json({ message: 'Permission denied. Only admin users can update products.' });
     }
 
-    const {  title, description,  size, color, availability, price, categoryId } = req.body;
+    const {  title, description,  sizes, colors, availability, price, categoryId } = req.body;
 
     // Check if the specified category exists
     const category = await Category.findById(categoryId);
@@ -157,7 +157,7 @@ exports.updateProductById = async (req, res) => {
 
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.productId,
-      {  title, description, size, color, availability, price, category: categoryId },
+      {  title, description, sizes, colors, availability, price, category: categoryId },
       { new: true }
     ).populate('category');
 

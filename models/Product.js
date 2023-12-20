@@ -15,9 +15,9 @@ const ProductSchema = new mongoose.Schema(
       ref: 'Category',
       required: true,
     },
-    size:  [{ type: String }],
+    sizes:  [{ type: String }],
     availability:  [{ type: String }],
-    color: { type: String },
+    colors: [{ type: String }],
     price: { type: Number, required: true },
     
   },
