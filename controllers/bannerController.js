@@ -1,7 +1,15 @@
 const Banner = require('../models/Banner');
-const mongoose = require('mongoose');
-const fs = require('fs');
-const path = require('path');
+
+const config = require('../config/config');
+
+const keyFilename = config.googleAppCredentials;
+
+const { Storage } = require('@google-cloud/storage');
+const storage = new Storage({
+  projectId: 'project-molding',
+  keyFilename: keyFilename,
+});
+const bucket = storage.bucket('project-molding_bucket');
 
 // Create a new banner
 exports.createBanner = async (req, res) => {
@@ -14,9 +22,20 @@ exports.createBanner = async (req, res) => {
       const images = req.files;
         
   
-        // Store image URLs in an array
+      // Function to upload images to Google Cloud Storage
+      const uploadPromises = images.map((image) => {
+        const imageFileName = image.originalname;
+        const file = bucket.file(`${imageFileName}`);
+        return file.save(image.buffer, { contentType: image.mimetype });
+      });
+
+      // Await uploading of all images
+      await Promise.all(uploadPromises);
+
+      // Retrieve image URLs after upload
       const imageUrls = images.map((image) => {
-        return `/uploads/banners/${image.filename}`;
+        const imageFileName = `${image.originalname}`;
+        return `https://storage.googleapis.com/project-molding_bucket/${imageFileName}`;
       });
   
       const newBanner = new Banner({

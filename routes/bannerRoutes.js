@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const bannerController = require('../controllers/bannerController');
 const authMiddleware = require('../middleware/authMiddleware');
-const upload = require('../middleware/uploadBanner');
+const multerConfig  = require('../middleware/multerConfig');
 
 // Create a new banner route
-router.post('/create', authMiddleware.verifyToken, upload.array('images'), bannerController.createBanner);
+router.post('/create', authMiddleware.verifyToken,  multerConfig.array('images'), bannerController.createBanner);
 
 // Update a banner by ID
 router.put('/update/:bannerId', authMiddleware.verifyToken, bannerController.updatebannerById);

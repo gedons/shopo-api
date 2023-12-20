@@ -20,7 +20,8 @@ const contactRoutes = require('./routes/contactRoutes');
 dotenv.config();
 
 const corsOptions = {
-  origin: 'https://www.daeds.uk', 
+  //origin: 'https://www.daeds.uk', 
+  origin: 'http://localhost:5173', 
   credentials: true,
 };
 

@@ -1,8 +1,6 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
-const mongoose = require('mongoose');
-const fs = require('fs');
-const path = require('path');
+
 
 const config = require('../config/config');
 
@@ -142,7 +140,6 @@ exports.getRelatedProductsByCategory = async (req, res) => {
   }
 };
 
-
 // Update a product by ID
 exports.updateProductById = async (req, res) => {
   try {
@@ -174,53 +171,52 @@ exports.updateProductById = async (req, res) => {
   }
 };
 
-  // Handle image upload for a specific product by ID
-  exports.uploadProductImage = async (req, res) => {
-    try {
-      const productId = req.params.productId;
-      const product = await Product.findById(productId);
+// Handle image upload for a specific product by ID
+exports.uploadProductImage = async (req, res) => {
+  try {
+    const productId = req.params.productId;
+    const product = await Product.findById(productId);
 
-      if (!product) {
-        return res.status(404).json({ message: 'Product not found' });
-      }
-
-      if (!req.file) {
-        return res.status(400).json({ message: 'No image file uploaded' });
-      }
-
-      const fileName = req.file.originalname;
-      const file = bucket.file(fileName);
-
-      // Create a write stream to upload the file
-      const stream = file.createWriteStream({
-        metadata: {
-          contentType: req.file.mimetype,
-        },
-        resumable: false,
-      });
-
-      stream.on('error', (err) => {
-        console.error('Error uploading to GCS:', err);
-        res.status(500).json({ message: 'Failed to upload image', error: err.message });
-      });
-
-      stream.on('finish', async () => {
-        // Once the file is successfully uploaded, add its GCS path to the product's images array
-        const gcsImagePath = `https://storage.googleapis.com/project-molding_bucket/${fileName}`;
-        product.images.push(gcsImagePath);
-
-        const updatedProduct = await product.save();
-
-        res.status(200).json({ message: 'Image added successfully', image: updatedProduct });
-      });
-
-      stream.end(req.file.buffer);  
-    } catch (error) {
-      console.error('Error uploading product image:', error);
-      res.status(500).json({ message: 'Failed to upload image', error: error.message });
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
     }
-  };
 
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file uploaded' });
+    }
+
+    const fileName = req.file.originalname;
+    const file = bucket.file(fileName);
+
+    // Create a write stream to upload the file
+    const stream = file.createWriteStream({
+      metadata: {
+        contentType: req.file.mimetype,
+      },
+      resumable: false,
+    });
+
+    stream.on('error', (err) => {
+      console.error('Error uploading to GCS:', err);
+      res.status(500).json({ message: 'Failed to upload image', error: err.message });
+    });
+
+    stream.on('finish', async () => {
+      // Once the file is successfully uploaded, add its GCS path to the product's images array
+      const gcsImagePath = `https://storage.googleapis.com/project-molding_bucket/${fileName}`;
+      product.images.push(gcsImagePath);
+
+      const updatedProduct = await product.save();
+
+      res.status(200).json({ message: 'Image added successfully', image: updatedProduct });
+    });
+
+    stream.end(req.file.buffer);  
+  } catch (error) {
+    console.error('Error uploading product image:', error);
+    res.status(500).json({ message: 'Failed to upload image', error: error.message });
+  }
+};
 
 // Delete a product by ID
 exports.deleteProductById = async (req, res) => {

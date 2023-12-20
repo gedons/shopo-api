@@ -1,6 +1,16 @@
 const Category = require('../models/Category');
 const fs = require('fs');
-//const url = 'http://localhost:5000';
+
+const config = require('../config/config');
+
+const keyFilename = config.googleAppCredentials;
+
+const { Storage } = require('@google-cloud/storage');
+const storage = new Storage({
+  projectId: 'project-molding',
+  keyFilename: keyFilename,
+});
+const bucket = storage.bucket('project-molding_bucket');
 
 
 // Create a new category
@@ -34,16 +44,39 @@ exports.uploadCategoryImage = async (req, res) => {
       return res.status(404).json({ message: 'Category not found' });
     }
 
-    // Logic to handle image upload and store in a folder
-    if (req.file) {
-      // Save image URL to the database
-      category.imageUrl = `/uploads/categories/${req.file.filename}`;  
-      await category.save();
-
-      res.status(200).json({ message: 'Image uploaded successfully', imageUrl: category.imageUrl });
-    } else {
-      res.status(400).json({ message: 'No image uploaded' });
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file uploaded' });
     }
+
+    const fileName = req.file.originalname;
+    const file = bucket.file(fileName);
+
+    // Create a write stream to upload the file
+    const stream = file.createWriteStream({
+      metadata: {
+        contentType: req.file.mimetype,
+      },
+      resumable: false,
+    });
+
+    stream.on('error', (err) => {
+      console.error('Error uploading to GCS:', err);
+      res.status(500).json({ message: 'Failed to upload image', error: err.message });
+    });
+
+
+
+    stream.on('finish', async () => {
+      // Once the file is successfully uploaded, add its GCS path to the product's images array
+      const gcsImagePath = `https://storage.googleapis.com/project-molding_bucket/${fileName}`;
+      category.imageUrl = gcsImagePath;
+
+      const updatedCategory = await category.save();
+
+      res.status(200).json({ message: 'Image added successfully', imageUrl: updatedCategory });
+    });
+
+    stream.end(req.file.buffer);      
   } catch (error) {
     console.error('Error uploading category image:', error);
     res.status(500).json({ message: 'Failed to upload image', error: error.message });
