@@ -6,7 +6,7 @@ const Product = require('../models/Product');
 // Add a product to the cart
 exports.addToCart = async (req, res) => {
   try {
-    const { productId, quantity, price } = req.body;
+    const { productId, quantity, price, size, color } = req.body;
 
     const user = await User.findById(req.user);
     if (!user) {
@@ -21,7 +21,7 @@ exports.addToCart = async (req, res) => {
     let cart = await Cart.findOne({ user: req.user });
 
     if (!cart) {
-      cart = new Cart({ user: req.user, products: [{ product: productId, quantity, price }] });
+      cart = new Cart({ user: req.user, products: [{ product: productId, quantity, price, size, color }] });
     } else {
       // Check if the product is already in the cart
       const existingProduct = cart.products.find((item) => item.product.equals(productId));
@@ -57,30 +57,41 @@ exports.getCart = async (req, res) => {
 
 // Update the quantity of a product in the cart
 exports.updateCartItemQuantity = async (req, res) => {
-    try {
-      const { productId, quantity } = req.body;
-  
+  try {
+      const { productId, quantity, size, color } = req.body; 
+
       const cart = await Cart.findOne({ user: req.user });
-  
+
       if (!cart) {
-        return res.status(404).json({ message: 'Cart not found' });
+          return res.status(404).json({ message: 'Cart not found' });
       }
-  
-      const cartProduct = cart.products.find((item) => item.product.equals(productId));
-  
+
+      let cartProduct = cart.products.find((item) => item.product.equals(productId));
+
       if (!cartProduct) {
-        return res.status(404).json({ message: 'Product not found in the cart' });
+          
+          cartProduct = {
+              product: productId,
+              quantity: quantity,
+              size: size, 
+              color: color,  
+          };
+          cart.products.push(cartProduct);
+      } else {
+           
+          cartProduct.quantity = quantity;
+          if (size) cartProduct.size = size; 
+          if (color) cartProduct.color = color; 
       }
-  
-      cartProduct.quantity = quantity;
-  
+
       await cart.save();
-  
-      res.status(200).json({ message: 'Cart item quantity updated successfully', cart });
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to update cart item quantity', error: error.message });
-    }
+
+      res.status(200).json({ message: 'Cart item updated successfully', cart });
+  } catch (error) {
+      res.status(500).json({ message: 'Failed to update cart item', error: error.message });
+  }
 };
+
   
   // Remove a product from the cart
 exports.removeFromCart = async (req, res) => {
